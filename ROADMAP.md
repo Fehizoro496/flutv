@@ -62,14 +62,14 @@ Objectif : lire les flux HLS/TS de manière fiable.
 
 Objectif : finaliser l'expérience utilisateur.
 
-- [ ] Boîte Hive `favorites` (liste d'IDs de chaînes)
-- [ ] Bouton cœur sur chaque card + détail
-- [ ] Écran Favoris listant les chaînes sauvegardées
-- [ ] Pull-to-refresh sur l'accueil
-- [ ] Skeleton loaders (shimmer) pendant le chargement
-- [ ] Animations de transition affinées
-- [ ] Mode hors-ligne : afficher cache + message si pas de réseau
-- [ ] Icône d'app et splash screen personnalisés
+- [x] Boîte Hive `favorites` (liste d'IDs de chaînes)
+- [x] Bouton cœur sur chaque card + détail
+- [x] Écran Favoris listant les chaînes sauvegardées
+- [x] Pull-to-refresh sur l'accueil *(posé en Phase 2)*
+- [x] Skeleton loaders (shimmer) pendant le chargement
+- [x] Animations de transition affinées (fade through player & catégorie)
+- [x] Mode hors-ligne : afficher cache + message si pas de réseau
+- [ ] Icône d'app et splash screen personnalisés *(en attente d'assets)*
 
 ## Phase 6 — EPG (futur)
 
