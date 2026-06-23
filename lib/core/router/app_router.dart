@@ -49,21 +49,27 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/category/:id',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = state.pathParameters['id']!;
           final label = state.extra is String ? state.extra as String : id;
-          return CategoryDetailScreen(categoryId: id, label: label);
+          return _fadeThroughPage(
+            key: state.pageKey,
+            child: CategoryDetailScreen(categoryId: id, label: label),
+          );
         },
       ),
       GoRoute(
         path: '/player/:id',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = state.pathParameters['id']!;
           final args = state.extra is PlayerArgs ? state.extra as PlayerArgs : null;
-          return PlayerScreen(
-            channelId: id,
-            initial: args?.view,
-            heroTag: args?.heroTag,
+          return _fadeThroughPage(
+            key: state.pageKey,
+            child: PlayerScreen(
+              channelId: id,
+              initial: args?.view,
+              heroTag: args?.heroTag,
+            ),
           );
         },
       ),
@@ -75,3 +81,21 @@ final routerProvider = Provider<GoRouter>((ref) {
     ),
   );
 });
+
+CustomTransitionPage<void> _fadeThroughPage({
+  required LocalKey key,
+  required Widget child,
+}) {
+  return CustomTransitionPage<void>(
+    key: key,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 280),
+    reverseTransitionDuration: const Duration(milliseconds: 240),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(
+        opacity: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+        child: child,
+      );
+    },
+  );
+}

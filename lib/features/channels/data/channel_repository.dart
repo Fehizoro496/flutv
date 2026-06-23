@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/network/cache_store.dart';
 import '../../../core/network/dio_provider.dart';
+import '../../../core/network/iptv_failure.dart';
 import '../../../core/network/iptv_org_client.dart';
 import 'models/category.dart';
 import 'models/channel.dart';
@@ -15,11 +16,15 @@ class ChannelRepository {
   final IptvOrgClient _client;
   final CacheStore _cache;
 
+  bool _lastWasStale = false;
+  bool get lastWasStale => _lastWasStale;
+
   static const _kChannels = 'channels';
   static const _kStreams = 'streams';
   static const _kCategories = 'categories';
 
   Future<List<ChannelView>> getChannels({bool refresh = false}) async {
+    _lastWasStale = false;
     final channels = await _load(
       _kChannels,
       _client.fetchChannels,
@@ -89,9 +94,18 @@ class ChannelRepository {
       final cached = _cache.read(key);
       if (cached != null) return cached;
     }
-    final fresh = await fetch();
-    await _cache.write(key, fresh);
-    return fresh;
+    try {
+      final fresh = await fetch();
+      await _cache.write(key, fresh);
+      return fresh;
+    } on IptvFailure {
+      final stale = _cache.read(key, ignoreTtl: true);
+      if (stale != null) {
+        _lastWasStale = true;
+        return stale;
+      }
+      rethrow;
+    }
   }
 
   bool _isFrench(Channel channel) {

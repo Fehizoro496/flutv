@@ -10,14 +10,16 @@ class CacheStore {
   final Box _box;
   final Duration _ttl;
 
-  List<Map<String, dynamic>>? read(String key) {
+  List<Map<String, dynamic>>? read(String key, {bool ignoreTtl = false}) {
     final entry = _box.get(key);
     if (entry is! Map) return null;
     final ts = entry['timestamp'];
     final data = entry['data'];
     if (ts is! int || data is! List) return null;
-    final age = DateTime.now().millisecondsSinceEpoch - ts;
-    if (age > _ttl.inMilliseconds) return null;
+    if (!ignoreTtl) {
+      final age = DateTime.now().millisecondsSinceEpoch - ts;
+      if (age > _ttl.inMilliseconds) return null;
+    }
     return data
         .whereType<Map>()
         .map((e) => e.cast<String, dynamic>())

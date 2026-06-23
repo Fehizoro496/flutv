@@ -4,9 +4,13 @@ import '../data/channel_repository.dart';
 import '../data/models/category.dart';
 import '../data/models/channel_view.dart';
 
+final offlineProvider = StateProvider<bool>((ref) => false);
+
 final channelsProvider = FutureProvider<List<ChannelView>>((ref) async {
   final repo = ref.watch(channelRepositoryProvider);
-  return repo.getChannels();
+  final result = await repo.getChannels();
+  ref.read(offlineProvider.notifier).state = repo.lastWasStale;
+  return result;
 });
 
 final categoriesProvider = FutureProvider<List<Category>>((ref) async {

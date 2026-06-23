@@ -10,18 +10,21 @@ class AsyncValueView<T> extends StatelessWidget {
     required this.data,
     this.onRetry,
     this.loadingMessage,
+    this.loadingBuilder,
   });
 
   final AsyncValue<T> value;
   final Widget Function(T data) data;
   final VoidCallback? onRetry;
   final String? loadingMessage;
+  final WidgetBuilder? loadingBuilder;
 
   @override
   Widget build(BuildContext context) {
     return value.when(
       data: data,
-      loading: () => _LoadingState(message: loadingMessage),
+      loading: () => loadingBuilder?.call(context) ??
+          _LoadingState(message: loadingMessage),
       error: (err, _) => _ErrorState(message: err.toString(), onRetry: onRetry),
     );
   }

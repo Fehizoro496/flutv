@@ -11,6 +11,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../core/theme/app_colors.dart';
 import '../channels/data/models/channel_view.dart';
 import '../channels/providers/channels_provider.dart';
+import '../favorites/providers/favorites_provider.dart';
 import 'widgets/player_controls.dart';
 
 class PlayerScreen extends ConsumerStatefulWidget {
@@ -269,9 +270,16 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                 buffering: _buffering,
                 muted: _muted,
                 fullscreen: _fullscreen,
+                favorite: ref.watch(isFavoriteProvider(widget.channelId)),
                 onPlayPause: _togglePlayPause,
                 onMute: _toggleMute,
                 onFullscreen: _toggleFullscreen,
+                onFavorite: () {
+                  ref
+                      .read(favoritesProvider.notifier)
+                      .toggle(widget.channelId);
+                  _scheduleHideControls();
+                },
                 onBack: () async {
                   await _exitFullscreenIfNeeded();
                   if (context.mounted) context.pop();

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../shared/widgets/async_value_view.dart';
+import '../../shared/widgets/skeletons.dart';
 import '../channels/data/models/channel_view.dart';
 import '../channels/providers/channels_provider.dart';
 import '../channels/widgets/channel_card.dart';
@@ -32,7 +33,7 @@ class CategoryDetailScreen extends ConsumerWidget {
       ),
       body: AsyncValueView<List<ChannelView>>(
         value: channelsAsync,
-        loadingMessage: 'Chargement…',
+        loadingBuilder: (_) => const GridSkeleton(),
         onRetry: () => ref.invalidate(channelsProvider),
         data: (_) {
           final channels = ref.watch(categoryChannelsProvider(categoryId));

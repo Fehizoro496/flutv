@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../shared/widgets/async_value_view.dart';
+import '../../shared/widgets/skeletons.dart';
 import '../channels/data/models/channel_view.dart';
 import '../channels/providers/channels_provider.dart';
 import '../channels/widgets/category_rail.dart';
@@ -39,7 +40,7 @@ class HomeScreen extends ConsumerWidget {
             hasScrollBody: true,
             child: AsyncValueView<List<ChannelView>>(
               value: channels,
-              loadingMessage: 'Chargement des chaînes françaises…',
+              loadingBuilder: (_) => const HomeSkeleton(),
               onRetry: () => ref.invalidate(channelsProvider),
               data: (_) => const _HomeContent(),
             ),
@@ -57,6 +58,7 @@ class _HomeContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final featured = ref.watch(featuredChannelsProvider);
     final rails = ref.watch(homeRailsProvider);
+    final offline = ref.watch(offlineProvider);
 
     if (featured.isEmpty && rails.isEmpty) {
       return Center(
@@ -75,6 +77,7 @@ class _HomeContent extends ConsumerWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.only(bottom: 32),
       children: [
+        if (offline) const _OfflineBanner(),
         if (featured.isNotEmpty) ...[
           const SizedBox(height: 8),
           FeaturedCarousel(channels: featured),
@@ -90,6 +93,38 @@ class _HomeContent extends ConsumerWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+class _OfflineBanner extends StatelessWidget {
+  const _OfflineBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.errorContainer.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.cloud_off_rounded, color: theme.colorScheme.onErrorContainer),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Mode hors-ligne · données du cache',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onErrorContainer,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

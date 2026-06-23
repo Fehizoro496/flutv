@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../shared/widgets/async_value_view.dart';
+import '../../shared/widgets/skeletons.dart';
 import '../channels/data/models/category.dart';
 import '../channels/providers/channels_provider.dart';
 
@@ -16,7 +17,7 @@ class CategoriesScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Catégories')),
       body: AsyncValueView<List<Category>>(
         value: categories,
-        loadingMessage: 'Chargement des catégories…',
+        loadingBuilder: (_) => const CategoriesSkeleton(),
         onRetry: () => ref.invalidate(categoriesProvider),
         data: (list) => _CategoryGrid(categories: list),
       ),

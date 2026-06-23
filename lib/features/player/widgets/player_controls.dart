@@ -10,9 +10,11 @@ class PlayerControls extends StatelessWidget {
     required this.buffering,
     required this.muted,
     required this.fullscreen,
+    required this.favorite,
     required this.onPlayPause,
     required this.onMute,
     required this.onFullscreen,
+    required this.onFavorite,
     required this.onBack,
   });
 
@@ -21,9 +23,11 @@ class PlayerControls extends StatelessWidget {
   final bool buffering;
   final bool muted;
   final bool fullscreen;
+  final bool favorite;
   final VoidCallback onPlayPause;
   final VoidCallback onMute;
   final VoidCallback onFullscreen;
+  final VoidCallback onFavorite;
   final VoidCallback onBack;
 
   @override
@@ -47,7 +51,12 @@ class PlayerControls extends StatelessWidget {
         child: SafeArea(
           child: Column(
             children: [
-              _TopBar(title: title, onBack: onBack),
+              _TopBar(
+                title: title,
+                favorite: favorite,
+                onBack: onBack,
+                onFavorite: onFavorite,
+              ),
               Expanded(
                 child: Center(
                   child: buffering
@@ -70,15 +79,22 @@ class PlayerControls extends StatelessWidget {
 }
 
 class _TopBar extends StatelessWidget {
-  const _TopBar({required this.title, required this.onBack});
+  const _TopBar({
+    required this.title,
+    required this.favorite,
+    required this.onBack,
+    required this.onFavorite,
+  });
 
   final String title;
+  final bool favorite;
   final VoidCallback onBack;
+  final VoidCallback onFavorite;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 4, 12, 0),
+      padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
       child: Row(
         children: [
           IconButton(
@@ -97,7 +113,18 @@ class _TopBar extends StatelessWidget {
               ),
             ),
           ),
+          IconButton(
+            icon: Icon(
+              favorite
+                  ? Icons.favorite_rounded
+                  : Icons.favorite_border_rounded,
+              color: favorite ? AppColors.liveIndicator : Colors.white,
+            ),
+            onPressed: onFavorite,
+          ),
+          const SizedBox(width: 4),
           const _LiveBadge(),
+          const SizedBox(width: 8),
         ],
       ),
     );
