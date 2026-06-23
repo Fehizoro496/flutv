@@ -20,7 +20,7 @@ Objectif : projet prêt à coder, avec thème et navigation en place.
 - [x] Créer la structure de dossiers `lib/core` + `lib/features/*`
 - [x] Thème clair Material 3 avec accent bleu (`#2563EB`)
 - [x] Configurer `go_router` avec routes : `/`, `/player/:id`, `/search`, `/favorites`
-- [ ] Splash screen et icône d'app *(reporté en Phase 5)*
+- [x] Splash screen et icône d'app par défaut *(personnalisation reportée en Phase 7)*
 
 ## Phase 2 — Couche données (terminé)
 
@@ -58,7 +58,7 @@ Objectif : lire les flux HLS/TS de manière fiable.
 - [x] Indicateur de buffering
 - [x] Garder l'écran allumé pendant la lecture (`wakelock_plus`)
 
-## Phase 5 — Favoris et polish
+## Phase 5 — Favoris et polish (terminé)
 
 Objectif : finaliser l'expérience utilisateur.
 
@@ -69,16 +69,25 @@ Objectif : finaliser l'expérience utilisateur.
 - [x] Skeleton loaders (shimmer) pendant le chargement
 - [x] Animations de transition affinées (fade through player & catégorie)
 - [x] Mode hors-ligne : afficher cache + message si pas de réseau
-- [ ] Icône d'app et splash screen personnalisés *(en attente d'assets)*
 
-## Phase 6 — EPG (futur)
+## Phase 6 — EPG (terminé)
 
 Objectif : guide TV intégré.
 
-- [ ] Parser XMLTV depuis `iptv-org/epg`
-- [ ] Stockage Hive des programmes
-- [ ] Affichage "En cours / À suivre" sur chaque card
-- [ ] Écran guide TV par chaîne (timeline horizontale)
+- [x] Récupérer l'index des sources EPG via `https://iptv-org.github.io/api/guides.json`
+- [x] Parser XMLTV (paquet `xml`) en `EpgProgramme(channelId, start, stop, title, desc?)`
+- [x] Stockage Hive des programmes (TTL 6h)
+- [x] Affichage "En cours" sur chaque card (depuis le cache, sans fetch)
+- [x] Écran guide TV par chaîne (timeline verticale) — déclenche le fetch
+- [x] Bouton "Programme TV" dans le lecteur
+
+## Phase 7 — Identité visuelle
+
+Objectif : personnaliser l'app pour publication.
+
+- [ ] Icône d'app (`flutter_launcher_icons`) à partir d'un PNG 1024×1024
+- [ ] Splash screen (`flutter_native_splash`) sur fond `#2563EB`
+- [ ] Capture d'écran et descriptif Play Store
 
 ## Idées hors-scope initial
 
