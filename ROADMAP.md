@@ -7,31 +7,31 @@ Plan de développement de l'application Flutv, organisé en phases incrémentale
 - [x] `flutter create` Android uniquement
 - [x] README.md et ROADMAP.md initiaux
 
-## Phase 1 — Fondations
+## Phase 1 — Fondations (terminé)
 
 Objectif : projet prêt à coder, avec thème et navigation en place.
 
-- [ ] Ajouter les dépendances dans `pubspec.yaml` :
+- [x] Ajouter les dépendances dans `pubspec.yaml` :
   - `flutter_riverpod`, `go_router`, `dio`, `hive`, `hive_flutter`
   - `media_kit`, `media_kit_video`, `media_kit_libs_android_video`
   - `cached_network_image`, `freezed_annotation`, `json_annotation`
-  - dev : `build_runner`, `freezed`, `json_serializable`, `hive_generator`
-- [ ] Configurer `android/app/build.gradle` : minSdk 21, permission `INTERNET`
-- [ ] Créer la structure de dossiers `lib/core` + `lib/features/*`
-- [ ] Thème clair Material 3 avec accent bleu (`#2563EB`)
-- [ ] Configurer `go_router` avec routes : `/`, `/player/:id`, `/search`, `/favorites`
-- [ ] Splash screen et icône d'app
+  - dev : `build_runner`, `freezed`, `json_serializable`
+- [x] Configurer `android/app/build.gradle` : minSdk 21, permission `INTERNET`
+- [x] Créer la structure de dossiers `lib/core` + `lib/features/*`
+- [x] Thème clair Material 3 avec accent bleu (`#2563EB`)
+- [x] Configurer `go_router` avec routes : `/`, `/player/:id`, `/search`, `/favorites`
+- [ ] Splash screen et icône d'app *(reporté en Phase 5)*
 
-## Phase 2 — Couche données
+## Phase 2 — Couche données (terminé)
 
 Objectif : récupérer les chaînes françaises et leurs flux.
 
-- [ ] Modèles `Channel`, `Stream`, `Category`, `Country` (freezed + JSON)
-- [ ] `IptvOrgClient` (dio) avec endpoints channels/streams/categories/countries
-- [ ] Cache Hive 24h des métadonnées
-- [ ] Repository qui fusionne channels + streams + filtre `country == FR` ou `languages.contains('fra')`
-- [ ] Providers Riverpod : `channelsProvider`, `categoriesProvider`
-- [ ] Gestion erreur réseau + loader
+- [x] Modèles `Channel`, `StreamLink`, `Category`, `Country`, `ChannelView` (freezed + JSON)
+- [x] `IptvOrgClient` (dio) avec endpoints channels/streams/categories/countries
+- [x] Cache Hive 24h des métadonnées (`CacheStore`)
+- [x] Repository qui fusionne channels + streams + filtre `country == FR` ou `languages.contains('fra')`
+- [x] Providers Riverpod : `channelsProvider`, `categoriesProvider`, `channelsByCategoryProvider`
+- [x] Gestion erreur réseau + loader (`IptvFailure`, `AsyncValueView`)
 
 ## Phase 3 — Accueil et navigation
 
