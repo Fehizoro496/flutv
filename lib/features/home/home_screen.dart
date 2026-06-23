@@ -5,7 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../shared/widgets/async_value_view.dart';
 import '../channels/data/models/channel_view.dart';
 import '../channels/providers/channels_provider.dart';
-import '../channels/widgets/channel_tile.dart';
+import '../channels/widgets/category_rail.dart';
+import '../channels/widgets/featured_carousel.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -24,6 +25,10 @@ class HomeScreen extends ConsumerWidget {
             title: const Text('Flutv'),
             actions: [
               IconButton(
+                icon: const Icon(Icons.search_rounded),
+                onPressed: () => context.push('/search'),
+              ),
+              IconButton(
                 icon: const Icon(Icons.refresh_rounded),
                 onPressed: () => refreshChannels(ref),
               ),
@@ -36,7 +41,7 @@ class HomeScreen extends ConsumerWidget {
               value: channels,
               loadingMessage: 'Chargement des chaînes françaises…',
               onRetry: () => ref.invalidate(channelsProvider),
-              data: (list) => _ChannelList(channels: list),
+              data: (_) => const _HomeContent(),
             ),
           ),
         ],
@@ -45,14 +50,15 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-class _ChannelList extends StatelessWidget {
-  const _ChannelList({required this.channels});
-
-  final List<ChannelView> channels;
+class _HomeContent extends ConsumerWidget {
+  const _HomeContent();
 
   @override
-  Widget build(BuildContext context) {
-    if (channels.isEmpty) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final featured = ref.watch(featuredChannelsProvider);
+    final rails = ref.watch(homeRailsProvider);
+
+    if (featured.isEmpty && rails.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -64,17 +70,26 @@ class _ChannelList extends StatelessWidget {
         ),
       );
     }
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
-      itemCount: channels.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 6),
-      itemBuilder: (context, i) {
-        final view = channels[i];
-        return ChannelTile(
-          view: view,
-          onTap: () => context.push('/player/${view.id}'),
-        );
-      },
+
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 32),
+      children: [
+        if (featured.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          FeaturedCarousel(channels: featured),
+        ],
+        for (final rail in rails)
+          CategoryRail(
+            title: rail.label,
+            channels: rail.channels,
+            heroPrefix: 'rail-${rail.categoryId}',
+            onSeeAll: () => context.push(
+              '/category/${rail.categoryId}',
+              extra: rail.label,
+            ),
+          ),
+      ],
     );
   }
 }

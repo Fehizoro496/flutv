@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../shared/widgets/async_value_view.dart';
 import '../channels/data/models/category.dart';
@@ -23,14 +24,18 @@ class CategoriesScreen extends ConsumerWidget {
   }
 }
 
-class _CategoryGrid extends StatelessWidget {
+class _CategoryGrid extends ConsumerWidget {
   const _CategoryGrid({required this.categories});
 
   final List<Category> categories;
 
   @override
-  Widget build(BuildContext context) {
-    if (categories.isEmpty) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final grouped = ref.watch(channelsByCategoryProvider);
+    final available = categories
+        .where((c) => (grouped[c.id]?.isNotEmpty ?? false))
+        .toList();
+    if (available.isEmpty) {
       return Center(
         child: Text(
           'Aucune catégorie disponible.',
@@ -44,28 +49,40 @@ class _CategoryGrid extends StatelessWidget {
         crossAxisCount: 2,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
-        childAspectRatio: 2.4,
+        childAspectRatio: 2.2,
       ),
-      itemCount: categories.length,
+      itemCount: available.length,
       itemBuilder: (context, i) {
-        final cat = categories[i];
+        final cat = available[i];
+        final count = grouped[cat.id]?.length ?? 0;
         return Card(
           margin: EdgeInsets.zero,
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
-            onTap: () {},
+            onTap: () => context.push('/category/${cat.id}', extra: cat.name),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
               child: Row(
                 children: [
-                  const Icon(Icons.label_outline_rounded),
-                  const SizedBox(width: 8),
+                  const Icon(Icons.label_rounded),
+                  const SizedBox(width: 10),
                   Expanded(
-                    child: Text(
-                      cat.name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleSmall,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          cat.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '$count chaîne${count > 1 ? 's' : ''}',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
                     ),
                   ),
                 ],
