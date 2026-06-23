@@ -33,18 +33,18 @@ Objectif : récupérer les chaînes françaises et leurs flux.
 - [x] Providers Riverpod : `channelsProvider`, `categoriesProvider`, `channelsByCategoryProvider`
 - [x] Gestion erreur réseau + loader (`IptvFailure`, `AsyncValueView`)
 
-## Phase 3 — Accueil et navigation
+## Phase 3 — Accueil et navigation (terminé)
 
 Objectif : naviguer dans le catalogue.
 
-- [ ] Bottom navigation : Accueil / Recherche / Catégories / Favoris
-- [ ] Écran Accueil :
+- [x] Bottom navigation : Accueil / Recherche / Catégories / Favoris *(posé en Phase 1)*
+- [x] Écran Accueil :
   - Hero carousel auto-scroll (chaînes vedettes)
-  - Rails horizontaux par catégorie (Sport, Info, Cinéma, Jeunesse, Divertissement…)
+  - Rails horizontaux par catégorie (Info, Sport, Cinéma, Jeunesse, Divertissement)
   - Card chaîne avec logo + nom (animation scale au tap)
-- [ ] Écran Catégories : grille des catégories disponibles
-- [ ] Écran Recherche : `TextField` + filtrage live sur le nom
-- [ ] Hero animation entre tuile et écran lecteur
+- [x] Écran Catégories : grille des catégories disponibles + écran détail filtré
+- [x] Écran Recherche : `TextField` + filtrage live (debounced) sur le nom
+- [x] Hero animation entre tuile et écran lecteur (tag scopé par source)
 
 ## Phase 4 — Lecteur vidéo
 
