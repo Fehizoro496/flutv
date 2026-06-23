@@ -46,17 +46,17 @@ Objectif : naviguer dans le catalogue.
 - [x] Écran Recherche : `TextField` + filtrage live (debounced) sur le nom
 - [x] Hero animation entre tuile et écran lecteur (tag scopé par source)
 
-## Phase 4 — Lecteur vidéo
+## Phase 4 — Lecteur vidéo (terminé)
 
 Objectif : lire les flux HLS/TS de manière fiable.
 
-- [ ] Écran `PlayerScreen` avec `media_kit`
-- [ ] Contrôles overlay custom : play/pause, mute, fullscreen, indicateur live
-- [ ] Gestion orientation : portrait par défaut, paysage en fullscreen
-- [ ] Gestes : double-tap pour fullscreen, swipe vertical pour volume
-- [ ] Gestion erreur de flux (stream indisponible → message + retour)
-- [ ] Indicateur de buffering
-- [ ] Garder l'écran allumé pendant la lecture (`wakelock_plus`)
+- [x] Écran `PlayerScreen` avec `media_kit`
+- [x] Contrôles overlay custom : play/pause, mute, fullscreen, indicateur live
+- [x] Gestion orientation : portrait par défaut, paysage en fullscreen
+- [x] Gestes : double-tap pour fullscreen, swipe vertical pour volume
+- [x] Gestion erreur de flux (stream indisponible → message + retour)
+- [x] Indicateur de buffering
+- [x] Garder l'écran allumé pendant la lecture (`wakelock_plus`)
 
 ## Phase 5 — Favoris et polish
 
