@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../epg/providers/epg_provider.dart';
 import '../../favorites/providers/favorites_provider.dart';
 import '../data/models/channel_view.dart';
 
@@ -65,6 +66,7 @@ class _ChannelCardState extends ConsumerState<ChannelCard> {
       );
     }
 
+    final current = ref.watch(currentProgrammeProvider(widget.view.id));
     final card = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -73,13 +75,26 @@ class _ChannelCardState extends ConsumerState<ChannelCard> {
         const SizedBox(height: 8),
         Text(
           widget.view.name,
-          maxLines: 2,
+          maxLines: current == null ? 2 : 1,
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
           style: theme.textTheme.bodySmall?.copyWith(
             fontWeight: FontWeight.w600,
           ),
         ),
+        if (current != null) ...[
+          const SizedBox(height: 2),
+          Text(
+            current.title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ],
     );
 

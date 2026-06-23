@@ -11,11 +11,13 @@ class PlayerControls extends StatelessWidget {
     required this.muted,
     required this.fullscreen,
     required this.favorite,
+    required this.showPlayPause,
     required this.onPlayPause,
     required this.onMute,
     required this.onFullscreen,
     required this.onFavorite,
     required this.onBack,
+    required this.onEpg,
   });
 
   final String title;
@@ -24,11 +26,13 @@ class PlayerControls extends StatelessWidget {
   final bool muted;
   final bool fullscreen;
   final bool favorite;
+  final bool showPlayPause;
   final VoidCallback onPlayPause;
   final VoidCallback onMute;
   final VoidCallback onFullscreen;
   final VoidCallback onFavorite;
   final VoidCallback onBack;
+  final VoidCallback onEpg;
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +65,17 @@ class PlayerControls extends StatelessWidget {
                 child: Center(
                   child: buffering
                       ? const SizedBox.shrink()
-                      : _PlayPauseButton(playing: playing, onTap: onPlayPause),
+                      : AnimatedOpacity(
+                          opacity: showPlayPause ? 1 : 0,
+                          duration: const Duration(milliseconds: 200),
+                          child: IgnorePointer(
+                            ignoring: !showPlayPause,
+                            child: _PlayPauseButton(
+                              playing: playing,
+                              onTap: onPlayPause,
+                            ),
+                          ),
+                        ),
                 ),
               ),
               _BottomBar(
@@ -69,6 +83,7 @@ class PlayerControls extends StatelessWidget {
                 fullscreen: fullscreen,
                 onMute: onMute,
                 onFullscreen: onFullscreen,
+                onEpg: onEpg,
               ),
             ],
           ),
@@ -137,12 +152,14 @@ class _BottomBar extends StatelessWidget {
     required this.fullscreen,
     required this.onMute,
     required this.onFullscreen,
+    required this.onEpg,
   });
 
   final bool muted;
   final bool fullscreen;
   final VoidCallback onMute;
   final VoidCallback onFullscreen;
+  final VoidCallback onEpg;
 
   @override
   Widget build(BuildContext context) {
@@ -156,6 +173,11 @@ class _BottomBar extends StatelessWidget {
               color: Colors.white,
             ),
             onPressed: onMute,
+          ),
+          IconButton(
+            icon: const Icon(Icons.event_note_rounded, color: Colors.white),
+            tooltip: 'Programme TV',
+            onPressed: onEpg,
           ),
           const Spacer(),
           IconButton(

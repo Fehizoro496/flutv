@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/categories/categories_screen.dart';
 import '../../features/categories/category_detail_screen.dart';
+import '../../features/epg/epg_screen.dart';
 import '../../features/favorites/favorites_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/player/player_args.dart';
@@ -55,6 +56,16 @@ final routerProvider = Provider<GoRouter>((ref) {
           return _fadeThroughPage(
             key: state.pageKey,
             child: CategoryDetailScreen(categoryId: id, label: label),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/epg/:id',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return _fadeThroughPage(
+            key: state.pageKey,
+            child: EpgScreen(channelId: id),
           );
         },
       ),

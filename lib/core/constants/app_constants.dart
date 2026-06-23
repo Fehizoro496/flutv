@@ -17,4 +17,7 @@ class AppConstants {
 
   static const String favoritesBox = 'favorites';
   static const String cacheBox = 'cache';
+
+  static const String epgGuidesEndpoint = '$iptvApiBase/guides.json';
+  static const Duration epgCacheDuration = Duration(hours: 6);
 }

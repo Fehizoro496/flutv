@@ -40,10 +40,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   bool _muted = false;
   double _volume = 100;
   bool _fullscreen = false;
-  bool _showControls = true;
   bool _showVolumeOverlay = false;
-  Timer? _hideControlsTimer;
+  bool _showPlayPause = true;
   Timer? _hideVolumeTimer;
+  Timer? _hidePlayPauseTimer;
   String? _error;
 
   double? _dragStartVolume;
@@ -58,28 +58,47 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     _player = Player();
     _controller = VideoController(_player);
 
-    _subs.add(_player.stream.playing.listen((v) {
-      if (mounted) {
-        setState(() => _playing = v);
-        _updateWakelock();
-      }
-    }));
-    _subs.add(_player.stream.buffering.listen((v) {
-      if (mounted) setState(() => _buffering = v);
-    }));
-    _subs.add(_player.stream.volume.listen((v) {
-      if (mounted) setState(() => _volume = v);
-    }));
-    _subs.add(_player.stream.error.listen((e) {
-      if (!mounted) return;
-      if (_isFatalError(e)) {
-        setState(() => _error = e);
-      } else {
-        debugPrint('PlayerScreen ignored non-fatal mpv message: $e');
-      }
-    }));
+    _subs.add(
+      _player.stream.playing.listen((v) {
+        if (mounted) {
+          setState(() => _playing = v);
+          _updateWakelock();
+          if (v) {
+            _schedulePlayPauseHide();
+          } else {
+            _showPlayPauseNow(scheduleHide: false);
+          }
+        }
+      }),
+    );
+    _subs.add(
+      _player.stream.buffering.listen((v) {
+        if (mounted) {
+          setState(() => _buffering = v);
+          if (v) {
+            _showPlayPauseNow(scheduleHide: false);
+          } else if (_playing) {
+            _schedulePlayPauseHide();
+          }
+        }
+      }),
+    );
+    _subs.add(
+      _player.stream.volume.listen((v) {
+        if (mounted) setState(() => _volume = v);
+      }),
+    );
+    _subs.add(
+      _player.stream.error.listen((e) {
+        if (!mounted) return;
+        if (_isFatalError(e)) {
+          setState(() => _error = e);
+        } else {
+          debugPrint('PlayerScreen ignored non-fatal mpv message: $e');
+        }
+      }),
+    );
 
-    _scheduleHideControls();
     _openStream();
   }
 
@@ -122,27 +141,31 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     }
   }
 
-  void _scheduleHideControls() {
-    _hideControlsTimer?.cancel();
-    _hideControlsTimer = Timer(const Duration(seconds: 3), () {
-      if (mounted) setState(() => _showControls = false);
+  void _schedulePlayPauseHide() {
+    _hidePlayPauseTimer?.cancel();
+    _hidePlayPauseTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) setState(() => _showPlayPause = false);
     });
   }
 
-  void _toggleControls() {
-    setState(() => _showControls = !_showControls);
-    if (_showControls) _scheduleHideControls();
+  void _showPlayPauseNow({bool scheduleHide = true}) {
+    _hidePlayPauseTimer?.cancel();
+    if (!_showPlayPause) {
+      setState(() => _showPlayPause = true);
+    }
+    if (scheduleHide && _playing && !_buffering) {
+      _schedulePlayPauseHide();
+    }
   }
 
-  Future<void> _togglePlayPause() async {
-    await _player.playOrPause();
-    _scheduleHideControls();
+  Future<void> _togglePlayPause() {
+    _showPlayPauseNow();
+    return _player.playOrPause();
   }
 
   Future<void> _toggleMute() async {
     _muted = !_muted;
     await _player.setVolume(_muted ? 0 : 100);
-    _scheduleHideControls();
   }
 
   Future<void> _toggleFullscreen() async {
@@ -154,11 +177,12 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
       ]);
       await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     } else {
-      await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+      ]);
       await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     }
     if (mounted) setState(() {});
-    _scheduleHideControls();
   }
 
   void _onVerticalDragStart(DragStartDetails details) {
@@ -192,15 +216,17 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   Future<void> _exitFullscreenIfNeeded() async {
     if (_fullscreen) {
       _fullscreen = false;
-      await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+      ]);
       await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     }
   }
 
   @override
   void dispose() {
-    _hideControlsTimer?.cancel();
     _hideVolumeTimer?.cancel();
+    _hidePlayPauseTimer?.cancel();
     for (final s in _subs) {
       s.cancel();
     }
@@ -218,29 +244,35 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
 
     Widget video = Container(
       color: Colors.black,
-      child: Video(
-        controller: _controller,
-        controls: NoVideoControls,
-        fill: Colors.black,
+      child: IgnorePointer(
+        child: Video(
+          controller: _controller,
+          controls: NoVideoControls,
+          fill: Colors.black,
+        ),
       ),
     );
     if (widget.heroTag != null) {
       video = Hero(tag: widget.heroTag!, child: video);
     }
 
-    final body = GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: _toggleControls,
-      onDoubleTap: _toggleFullscreen,
-      onVerticalDragStart: _onVerticalDragStart,
-      onVerticalDragUpdate: _onVerticalDragUpdate,
-      onVerticalDragEnd: _onVerticalDragEnd,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          video,
-          if (_buffering && _error == null)
-            const Center(
+    final body = Stack(
+      fit: StackFit.expand,
+      children: [
+        video,
+        Positioned.fill(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _showPlayPauseNow,
+            onDoubleTap: _toggleFullscreen,
+            onVerticalDragStart: _onVerticalDragStart,
+            onVerticalDragUpdate: _onVerticalDragUpdate,
+            onVerticalDragEnd: _onVerticalDragEnd,
+          ),
+        ),
+        if (_buffering && _error == null)
+          const IgnorePointer(
+            child: Center(
               child: SizedBox(
                 width: 48,
                 height: 48,
@@ -250,50 +282,48 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                 ),
               ),
             ),
-          if (_error != null)
-            _ErrorOverlay(
-              message: _error!,
-              onRetry: _openStream,
-              onBack: () async {
-                await _exitFullscreenIfNeeded();
-                if (context.mounted) context.pop();
-              },
-            ),
-          AnimatedOpacity(
-            opacity: _showControls && _error == null ? 1 : 0,
-            duration: const Duration(milliseconds: 200),
-            child: IgnorePointer(
-              ignoring: !_showControls || _error != null,
-              child: PlayerControls(
-                title: title,
-                playing: _playing,
-                buffering: _buffering,
-                muted: _muted,
-                fullscreen: _fullscreen,
-                favorite: ref.watch(isFavoriteProvider(widget.channelId)),
-                onPlayPause: _togglePlayPause,
-                onMute: _toggleMute,
-                onFullscreen: _toggleFullscreen,
-                onFavorite: () {
-                  ref
-                      .read(favoritesProvider.notifier)
-                      .toggle(widget.channelId);
-                  _scheduleHideControls();
-                },
-                onBack: () async {
-                  await _exitFullscreenIfNeeded();
-                  if (context.mounted) context.pop();
-                },
-              ),
-            ),
           ),
-          if (_showVolumeOverlay)
-            Align(
+        // if (_error != null)
+        //   _ErrorOverlay(
+        //     message: _error!,
+        //     onRetry: _openStream,
+        //     onBack: () async {
+        //       await _exitFullscreenIfNeeded();
+        //       if (context.mounted) context.pop();
+        //     },
+        //   ),
+        PlayerControls(
+          title: title,
+          playing: _playing,
+          buffering: _buffering,
+          muted: _muted,
+          fullscreen: _fullscreen,
+          favorite: ref.watch(isFavoriteProvider(widget.channelId)),
+          showPlayPause: _showPlayPause || !_playing || _buffering,
+          onPlayPause: _togglePlayPause,
+          onMute: _toggleMute,
+          onFullscreen: _toggleFullscreen,
+          onFavorite: () =>
+              ref.read(favoritesProvider.notifier).toggle(widget.channelId),
+          onBack: () async {
+            await _exitFullscreenIfNeeded();
+            if (context.mounted) context.pop();
+          },
+          onEpg: () async {
+            await _exitFullscreenIfNeeded();
+            if (context.mounted) {
+              context.push('/epg/${widget.channelId}');
+            }
+          },
+        ),
+        if (_showVolumeOverlay)
+          IgnorePointer(
+            child: Align(
               alignment: Alignment.center,
               child: PlayerVolumeIndicator(volume: _volume),
             ),
-        ],
-      ),
+          ),
+      ],
     );
 
     return PopScope(
@@ -303,10 +333,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
           await _toggleFullscreen();
         }
       },
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        body: body,
-      ),
+      child: Scaffold(backgroundColor: Colors.black, body: body),
     );
   }
 }
@@ -332,8 +359,11 @@ class _ErrorOverlay extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline_rounded,
-                  color: AppColors.error, size: 48),
+              Icon(
+                Icons.error_outline_rounded,
+                color: AppColors.error,
+                size: 48,
+              ),
               const SizedBox(height: 16),
               const Text(
                 'Flux indisponible',
