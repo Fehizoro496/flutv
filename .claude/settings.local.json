@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter --version)",
+      "Bash(dart run *)",
+      "Bash(flutter analyze *)",
+      "Bash(git commit *)",
+      "Bash(git add *)",
+      "WebFetch(domain:iptv-org.github.io)"
+    ]
+  }
+}

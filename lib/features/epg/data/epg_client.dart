@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:archive/archive.dart';
 import 'package:dio/dio.dart';
 import 'package:xml/xml.dart';
 
@@ -48,24 +51,31 @@ class EpgClient {
   }
 
   Future<List<EpgProgramme>> fetchProgrammes(String url) async {
-    final String xmlBody;
+    final isGzip = url.toLowerCase().endsWith('.gz');
     try {
-      final response = await _dio.getUri<dynamic>(
+      final response = await _dio.getUri<List<int>>(
         Uri.parse(url),
-        options: Options(responseType: ResponseType.plain),
+        options: Options(
+          responseType: ResponseType.bytes,
+          receiveTimeout: const Duration(seconds: 60),
+        ),
       );
-      final body = response.data;
-      if (body is String) {
-        xmlBody = body;
-      } else if (body is List<int>) {
-        xmlBody = String.fromCharCodes(body);
-      } else {
-        throw const ParseFailure();
-      }
+      final bytes = response.data;
+      if (bytes == null || bytes.isEmpty) throw const ParseFailure();
+      final xmlBytes = (isGzip || _looksGzipped(bytes))
+          ? GZipDecoder().decodeBytes(bytes)
+          : bytes;
+      final xmlBody = utf8.decode(xmlBytes, allowMalformed: true);
+      return _parseXmltv(xmlBody);
     } on DioException catch (e) {
       throw _mapDioError(e);
+    } on ArchiveException {
+      throw const ParseFailure();
     }
-    return _parseXmltv(xmlBody);
+  }
+
+  bool _looksGzipped(List<int> bytes) {
+    return bytes.length >= 2 && bytes[0] == 0x1F && bytes[1] == 0x8B;
   }
 
   List<EpgProgramme> _parseXmltv(String body) {

@@ -12,4 +12,7 @@
 ///   'https://example.com/fr.xml',
 /// ];
 /// ```
-const epgManualXmltvUrls = <String>[];
+const epgManualXmltvUrls = <String>[
+  // Free-TV/IPTV → epgshare01 — agrégat français mis à jour quotidiennement.
+  'https://epgshare01.online/epgshare01/epg_ripper_FR1.xml.gz',
+];

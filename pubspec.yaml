@@ -39,6 +39,7 @@ dependencies:
 
   # XMLTV parsing for the EPG
   xml: ^6.5.0
+  archive: ^3.6.1
 
   # Code generation annotations
   freezed_annotation: ^3.0.0
